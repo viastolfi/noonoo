@@ -1,31 +1,12 @@
 #include "Renderer.hpp"
+#include "Game.hpp"
+
+#include <memory>
 
 int main()
 {
-  noonoo::Renderer r(400, 200);
-
-  bool showMessageBox = false;
-  int clicked = -1;
-
-  while (!r.ShouldWindowClose())
-  {
-    r.BeginDraw();
-
-    r.DrawButton((Rectangle) {24,24,120,30}, "#191#Show Message", showMessageBox);
-
-    if (showMessageBox)
-    {
-      r.DrawMessageBox(
-          (Rectangle){85,70,250,100}, 
-          "#191#Message Box", 
-          "Hi! This is a message!", 
-          clicked, "Nice", "Cool");
-
-      if (clicked >= 0) showMessageBox = false;
-    }
-
-    r.EndDraw();
-  }
-
+  std::unique_ptr<noonoo::Renderer> r = std::make_unique<noonoo::Renderer>(400, 200);
+  noonoo::Game g(std::move(r));
+  g.Run();
   return 0;
 }

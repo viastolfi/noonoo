@@ -4,11 +4,13 @@ RAYLIB_FOLDER = raylib-5.5_linux_amd64
 
 CS = \
 	$(SRC)/main.cpp \
-	$(SRC)/Renderer.cpp	
+	$(SRC)/Renderer.cpp	\
+	$(SRC)/Game.cpp
 
 OBJ = \
 	$(BUILD)/main.o \
-	$(BUILD)/Renderer.o
+	$(BUILD)/Renderer.o \
+	$(BUILD)/Game.o
 
 CC = g++
 CFLAGS = -Wall -Wextra -g
