@@ -1,15 +1,11 @@
 SRC_DIR     := src
 BUILD_DIR   := build
 INCLUDE_DIR := include
-RAYLIB_DIR  := raylib
 
 TARGET := $(BUILD_DIR)/noonoo
 
 SRC := $(wildcard $(SRC_DIR)/*.cpp)
 OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC))
-
-CXX := g++
-CXXFLAGS := -Wall -Wextra -g -I$(INCLUDE_DIR) -I$(RAYLIB_DIR)/include
 
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
@@ -17,8 +13,9 @@ UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_S),Darwin)
     PLATFORM := macos
     RAYLIB_ARCHIVE := raylib-5.5_macos.tar.gz
+    RAYLIB_DIR := raylib-5.5_macos
 
-    LDFLAGS := -L$(RAYLIB_DIR)/lib -l:libraylib.a \
+    LDFLAGS := ./$(RAYLIB_DIR)/lib/libraylib.a \
                -framework CoreVideo \
                -framework IOKit \
                -framework Cocoa \
@@ -30,6 +27,7 @@ else ifeq ($(UNAME_S),Linux)
     ifeq ($(UNAME_M),x86_64)
         PLATFORM := linux
         RAYLIB_ARCHIVE := raylib-5.5_linux_amd64.tar.gz
+        RAYLIB_DIR := raylib-5.5_linux_amd64
 
         LDFLAGS := -L$(RAYLIB_DIR)/lib -l:libraylib.a -lm
     else
@@ -38,6 +36,9 @@ else ifeq ($(UNAME_S),Linux)
 else
     $(error Unsupported OS: $(UNAME_S))
 endif
+
+CXX := g++
+CXXFLAGS := -Wall -Wextra -g -I$(INCLUDE_DIR) -I$(RAYLIB_DIR)/include
 
 .PHONY: all clean check-raylib
 
