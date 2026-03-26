@@ -3,10 +3,12 @@ BUILD = build
 RAYLIB_FOLDER = raylib-5.5_linux_amd64
 
 CS = \
-		 $(SRC)/main.cpp
+	$(SRC)/main.cpp \
+	$(SRC)/Renderer.cpp	
 
 OBJ = \
-			$(BUILD)/main.o
+	$(BUILD)/main.o \
+	$(BUILD)/Renderer.o
 
 CC = g++
 CFLAGS = -Wall -Wextra -g

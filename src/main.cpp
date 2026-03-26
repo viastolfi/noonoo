@@ -1,33 +1,31 @@
-#include "raylib.h"
-
-#define RAYGUI_IMPLEMENTATION
-#include "thirdparty/raygui.h"
+#include "Renderer.hpp"
 
 int main()
 {
-  InitWindow(400, 200, "raygui - controls test suite");
-  SetTargetFPS(60);
+  noonoo::Renderer r(400, 200);
 
   bool showMessageBox = false;
+  int clicked = -1;
 
-  while (!WindowShouldClose())
+  while (!r.ShouldWindowClose())
   {
-    BeginDrawing();
-    ClearBackground(GetColor(GuiGetStyle(DEFAULT, BACKGROUND_COLOR)));
+    r.BeginDraw();
 
-    if (GuiButton((Rectangle){ 24, 24, 120, 30 }, "#191#Show Message")) showMessageBox = true;
+    r.DrawButton((Rectangle) {24,24,120,30}, "#191#Show Message", showMessageBox);
 
     if (showMessageBox)
     {
-      int result = GuiMessageBox((Rectangle){ 85, 70, 250, 100 },
-          "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
+      r.DrawMessageBox(
+          (Rectangle){85,70,250,100}, 
+          "#191#Message Box", 
+          "Hi! This is a message!", 
+          clicked, "Nice", "Cool");
 
-      if (result >= 0) showMessageBox = false;
+      if (clicked >= 0) showMessageBox = false;
     }
 
-    EndDrawing();
+    r.EndDraw();
   }
 
-  CloseWindow();
   return 0;
 }
