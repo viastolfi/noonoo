@@ -1,68 +1,68 @@
-SRC = src
-BUILD = build
-RAYLIB_LINUX_X86_64_LIB = raylib-5.5_linux_amd64
-RAYLIB_DARWIN_LIB = raylib-5.5_macos
-RAYLIB_FOLDER = raylib
+SRC_DIR     := src
+BUILD_DIR   := build
+INCLUDE_DIR := include
+RAYLIB_DIR  := raylib
 
-CS = \
-		 $(SRC)/main.cpp \
-		 $(SRC)/Renderer.cpp \
-		 $(SRC)/Game.cpp
+TARGET := $(BUILD_DIR)/noonoo
 
-OBJ = \
-			$(BUILD)/main.o \
-			$(BUILD)/Renderer.o \
-			$(BUILD)/Game.o
+SRC := $(wildcard $(SRC_DIR)/*.cpp)
+OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC))
 
-CC = g++
-CFLAGS = -Wall -Wextra -g
+CXX := g++
+CXXFLAGS := -Wall -Wextra -g -I$(INCLUDE_DIR) -I$(RAYLIB_DIR)/include
 
-# Detect platform
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 
-.PHONY: all clean check-platform
+ifeq ($(UNAME_S),Darwin)
+    PLATFORM := macos
+    RAYLIB_ARCHIVE := raylib-5.5_macos.tar.gz
 
-all: check-platform $(BUILD)/noonoo
+    LDFLAGS := -L$(RAYLIB_DIR)/lib -l:libraylib.a \
+               -framework CoreVideo \
+               -framework IOKit \
+               -framework Cocoa \
+               -framework GLUT \
+               -framework OpenGL \
+               -framework AudioToolbox
 
-$(BUILD)/noonoo: $(OBJ)
-	$(CC) -o $@ $^ -L$(RAYLIB_FOLDER)/lib -l:libraylib.a -lm
+else ifeq ($(UNAME_S),Linux)
+    ifeq ($(UNAME_M),x86_64)
+        PLATFORM := linux
+        RAYLIB_ARCHIVE := raylib-5.5_linux_amd64.tar.gz
 
-$(BUILD)/%.o: $(SRC)/%.cpp 
-	@mkdir -p $(BUILD)
-	$(CC) $(CFLAGS) -c $< -o $@ -I$(RAYLIB_FOLDER)/include -Iinclude
+        LDFLAGS := -L$(RAYLIB_DIR)/lib -l:libraylib.a -lm
+    else
+        $(error Unsupported architecture: $(UNAME_M))
+    endif
+else
+    $(error Unsupported OS: $(UNAME_S))
+endif
 
-check-platform:
-	@sh -c '\
-		if [ "$(UNAME_S)" == "Darwin" ]; then \
-			if [ -d "$(RAYLIB_FOLDER)" ]; then \
-				echo "raylib already installed for your lib"; \
-				exit 0; \
-			else \
-				echo "Installing Raylib library for MacOS..."; \
-				mkdir $(RAYLIB_FOLDER); \
-				wget https://github.com/raysan5/raylib/releases/download/5.5/$(RAYLIB_DARWIN_LIB).tar.gz; \
-				tar -xzf $(RAYLIB_DARWIN_LIB).tar.gz -C $(RAYLIB_FOLDER) --strip-component 1; \
-				rm $(RAYLIB_DARWIN_LIB).tar.gz; \
-				echo "raylib downloaded and extracted"; \
-			fi \
-		elif [ "$(UNAME_S)" == "Linux" ] && [ "$(UNAME_M)" == "x86_64" ];then \
-			if [ -d "$(RAYLIB_FOLDER)" ]; then \
-				echo "raylib already installed for your lib"; \
-				exit 0; \
-			else \
-				echo "Downloading raylib 5.5 for Linux amd64..."; \
-				mkdir $(RAYLIB_FOLDER); \
- 				wget https://github.com/raysan5/raylib/releases/download/5.5/raylib-5.5_linux_amd64.tar.gz; \
-				tar -xzf raylib-5.5_linux_amd64.tar.gz -C $(RAYLIB_FOLDER) --strip-component 1; \
-				rm raylib-5.5_linux_amd64.tar.gz; \
-				echo "raylib downloaded and extracted"; \
-			fi \
-		else \
-			echo "Error: This Makefile only supports Linux x86_64 (amd64) and MacOS"; \
-			echo "Detected: $(UNAME_S) $(UNAME_M)"; \
-			exit 1; \
-		fi'
+.PHONY: all clean check-raylib
+
+all: check-raylib $(TARGET)
+
+$(TARGET): $(OBJ)
+	@echo "Linking..."
+	$(CXX) $^ -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(BUILD_DIR)
+	@echo "Compiling $<..."
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+check-raylib:
+	@if [ -d "$(RAYLIB_DIR)" ]; then \
+		echo "raylib already installed"; \
+	else \
+		echo "Installing raylib for $(PLATFORM)..."; \
+		mkdir $(RAYLIB_DIR); \
+		wget https://github.com/raysan5/raylib/releases/download/5.5/$(RAYLIB_ARCHIVE); \
+		tar -xzf $(RAYLIB_ARCHIVE) -C $(RAYLIB_DIR) --strip-components=1; \
+		rm $(RAYLIB_ARCHIVE); \
+		echo "raylib installed"; \
+	fi
 
 clean:
-	rm -rf $(BUILD)
+	rm -rf $(BUILD_DIR)
