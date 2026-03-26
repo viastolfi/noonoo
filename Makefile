@@ -24,7 +24,7 @@ $(BUILD)/noonoo: $(OBJ)
 
 $(BUILD)/%.o: $(SRC)/%.cpp 
 	@mkdir -p $(BUILD)
-	$(CC) $(CFLAGS) -c $< -o $@ -I$(RAYLIB_FOLDER)/include
+	$(CC) $(CFLAGS) -c $< -o $@ -I$(RAYLIB_FOLDER)/include -Iinclude
 
 check-platform:
 	@if [ "$(UNAME_S)" != "Linux" ] || [ "$(UNAME_M)" != "x86_64" ]; then \
