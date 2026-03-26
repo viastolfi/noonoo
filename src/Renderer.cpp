@@ -1,3 +1,4 @@
+#define RAYGUI_IMPLEMENTATION
 #include "Renderer.hpp"
 
 namespace noonoo {
