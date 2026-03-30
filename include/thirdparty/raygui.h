@@ -1,3 +1,5 @@
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 /*******************************************************************************************
 *
 *   raygui v5.0 - A simple and easy-to-use immediate-mode gui library
