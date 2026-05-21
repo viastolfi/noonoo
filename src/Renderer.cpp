@@ -1,5 +1,9 @@
 #define RAYGUI_IMPLEMENTATION
 #include "Renderer.hpp"
+#include "Question.hpp"
+#include "QuestionSign.hpp"
+
+#include <string>
 
 namespace noonoo {
 
@@ -56,6 +60,22 @@ void Renderer::DrawMessageBoxNull(
   va_end(args);
 
   clicked = GuiMessageBox(bounds, title, message, buttons.c_str());
+}
+
+void Renderer::DrawQuestion(const Question* q)
+{
+  const char* sign = "?";
+  switch (q->GetSign()) {
+    case QuestionSign::SIGN_PLUS:  sign = "+"; break;
+    case QuestionSign::SIGN_MINUS: sign = "-"; break;
+    case QuestionSign::SIGN_MUL:   sign = "*"; break;
+    case QuestionSign::SIGN_DIV:   sign = "/"; break;
+  }
+  std::string text =
+    std::to_string((int)q->GetLValue()) + " " +
+    sign + " " +
+    std::to_string((int)q->GetRValue()) + " = ?";
+  DrawText(text.c_str(), _width / 2 - 50, _height / 2 - 10, 20, BLACK);
 }
 
 } // namespace noonoo

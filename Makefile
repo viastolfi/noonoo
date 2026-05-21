@@ -4,8 +4,17 @@ INCLUDE_DIR := include
 
 TARGET := $(BUILD_DIR)/noonoo
 
-SRC := $(wildcard $(SRC_DIR)/*.cpp)
-OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC))
+SRC := \
+	$(SRC_DIR)/main.cpp \
+	$(SRC_DIR)/Game.cpp \
+	$(SRC_DIR)/Renderer.cpp \
+	$(SRC_DIR)/Question.cpp 
+
+OBJ := \
+	$(BUILD_DIR)/main.o	\
+	$(BUILD_DIR)/Game.o \
+	$(BUILD_DIR)/Renderer.o \
+	$(BUILD_DIR)/Question.o
 
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
