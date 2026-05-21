@@ -9,9 +9,12 @@ void SelectingDifficultyState::Update(Game& game, Renderer& renderer)
 {
   Difficulty difficulty = Difficulty::Easy;
   bool chosen = false;
-  renderer.DrawDifficultyScreen(difficulty, chosen);
+  bool showHistory = false;
+  renderer.DrawDifficultyScreen(difficulty, chosen, showHistory);
   if (chosen)
     game.StartGame(difficulty);
+  else if (showHistory)
+    game.GoToHistory();
 }
 
 } // namespace noonoo

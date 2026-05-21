@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <random>
 #include <set>
+#include <string>
 
 namespace noonoo {
 
@@ -70,6 +71,19 @@ double Question::GetResult() const
 const std::vector<double>& Question::GetPossibleAnswers() const
 {
   return _possible_answer;
+}
+
+std::string Question::ToString() const
+{
+  const char* sign = "?";
+  switch (_sign) {
+    case QuestionSign::SIGN_PLUS:  sign = "+"; break;
+    case QuestionSign::SIGN_MINUS: sign = "-"; break;
+    case QuestionSign::SIGN_MUL:   sign = "x"; break;
+    case QuestionSign::SIGN_DIV:   sign = "/"; break;
+  }
+  return std::to_string((int)_lvalue) + " " + sign + " " +
+         std::to_string((int)_rvalue) + " = ?";
 }
 
 } // namespace noonoo
