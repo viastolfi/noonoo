@@ -16,6 +16,7 @@ public:
   double GetRValue() const;
   QuestionSign GetSign() const;
   double GetResult() const;
+  const std::vector<double>& GetPossibleAnswers() const;
 private:
   double _lvalue;
   double _rvalue;

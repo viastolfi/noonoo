@@ -22,6 +22,7 @@ set(SOURCES
   src/Game.cpp
   src/Renderer.cpp
   src/Question.cpp
+  src/QuestionFactory.cpp
 )
 
 add_executable(noonoo ${SOURCES})
@@ -29,3 +30,8 @@ add_executable(noonoo ${SOURCES})
 target_include_directories(noonoo PRIVATE include)
 target_compile_options(noonoo PRIVATE -Wall -Wextra)
 target_link_libraries(noonoo PRIVATE raylib)
+
+add_custom_command(TARGET noonoo POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:noonoo>/assets
+)

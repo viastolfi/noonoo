@@ -3,10 +3,11 @@
 
 #include "Renderer.hpp"
 #include "Question.hpp"
-#include "QuestionSign.hpp"
 #include <memory>
 
 namespace noonoo {
+
+enum class GameState { Asking, ShowingResult };
 
 class Game {
 public:
@@ -16,8 +17,8 @@ public:
 private:
   std::unique_ptr<Renderer> _renderer;
   std::unique_ptr<Question> _current_question;
-  bool _showMessageBox = false;
-  int _clicked = -1;
+  GameState _state = GameState::Asking;
+  bool _was_correct = false;
 };
 
 }; // namespace noonoo
