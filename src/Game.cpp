@@ -1,13 +1,12 @@
 #include "Game.hpp"
+#include "QuestionFactory.hpp"
 
 namespace noonoo {
 
 Game::Game(std::unique_ptr<Renderer> r)
-  :_renderer(std::move(r))
+  : _renderer(std::move(r))
 {
-  _current_question = std::make_unique<Question>(
-    10, 10, QuestionSign::SIGN_PLUS
-  );
+  _current_question = QuestionFactory::Create();
 }
 
 void Game::Run()
@@ -16,21 +15,33 @@ void Game::Run()
   {
     _renderer->BeginDraw();
 
-    if (_current_question) {
-      _renderer->DrawQuestion(_current_question.get());
-    }
-
-    _renderer->DrawButton((Rectangle) {24,24,120,30}, "#191#Show Message", _showMessageBox);
-
-    if (_showMessageBox)
+    if (_state == GameState::Asking)
     {
-      _renderer->DrawMessageBox(
-          (Rectangle){85,70,250,100}, 
-          "#191#Message Box", 
-          "Hi! This is a message!", 
-          _clicked, "Nice", "Cool");
+      _renderer->DrawQuestion(_current_question.get());
 
-      if (_clicked >= 0) _showMessageBox = false;
+      int clicked = -1;
+      _renderer->DrawAnswerButtons(_current_question->GetPossibleAnswers(), clicked);
+
+      if (clicked >= 0)
+      {
+        double selected = _current_question->GetPossibleAnswers()[clicked];
+        _was_correct = ((int)selected == (int)_current_question->GetResult());
+        _state = GameState::ShowingResult;
+      }
+    }
+    else
+    {
+      _renderer->DrawQuestion(_current_question.get());
+      _renderer->DrawFeedback(_was_correct);
+
+      bool next = false;
+      _renderer->DrawButton({150, 160, 100, 30}, "Next", next);
+
+      if (next)
+      {
+        _current_question = QuestionFactory::Create();
+        _state = GameState::Asking;
+      }
     }
 
     _renderer->EndDraw();
