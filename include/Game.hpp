@@ -2,29 +2,46 @@
 #define GAME_HPP
 
 #include "Difficulty.hpp"
+#include "IGameState.hpp"
 #include "Question.hpp"
 #include "Renderer.hpp"
 #include <memory>
 
 namespace noonoo {
 
-enum class GameState { SelectingDifficulty, Asking, ShowingResult, GameOver };
-
 class Game {
 public:
   Game(std::unique_ptr<Renderer> r);
-  ~Game() = default;
+  ~Game();
   void Run();
+
+  void GoToSelectingDifficulty();
+  void GoToAsking();
+  void GoToShowingResult();
+  void GoToGameOver();
+
+  void StartGame(Difficulty d);
+  void SubmitAnswer(double selected);
+  void GenerateNextQuestion();
+  void DecrementTime(float dt);
+
+  float             GetTimeRemaining()      const { return _timeRemaining; }
+  float             GetTimerDuration()      const { return _timerDuration; }
+  const Question*   GetCurrentQuestion()    const { return _current_question.get(); }
+  bool              WasLastAnswerCorrect()  const { return _was_correct; }
+  int               GetScore()              const { return _score; }
+  int               GetTotal()              const { return _total; }
+
 private:
-  std::unique_ptr<Renderer> _renderer;
-  std::unique_ptr<Question> _current_question;
-  GameState _state = GameState::SelectingDifficulty;
-  Difficulty _difficulty = Difficulty::Easy;
-  bool _was_correct = false;
-  float _timeRemaining = 0.0f;
-  float _timerDuration = 0.0f;
-  int _score = 0;
-  int _total = 0;
+  std::unique_ptr<Renderer>   _renderer;
+  std::unique_ptr<Question>   _current_question;
+  std::unique_ptr<IGameState> _state;
+  Difficulty _difficulty    = Difficulty::Easy;
+  bool       _was_correct   = false;
+  float      _timeRemaining = 0.0f;
+  float      _timerDuration = 0.0f;
+  int        _score         = 0;
+  int        _total         = 0;
 };
 
 }; // namespace noonoo
