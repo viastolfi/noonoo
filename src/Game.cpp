@@ -6,7 +6,6 @@ namespace noonoo {
 Game::Game(std::unique_ptr<Renderer> r)
   : _renderer(std::move(r))
 {
-  _current_question = QuestionFactory::Create();
 }
 
 void Game::Run()
@@ -15,7 +14,17 @@ void Game::Run()
   {
     _renderer->BeginDraw();
 
-    if (_state == GameState::Asking)
+    if (_state == GameState::SelectingDifficulty)
+    {
+      bool chosen = false;
+      _renderer->DrawDifficultyScreen(_difficulty, chosen);
+      if (chosen)
+      {
+        _current_question = QuestionFactory::Create(_difficulty);
+        _state = GameState::Asking;
+      }
+    }
+    else if (_state == GameState::Asking)
     {
       _renderer->DrawQuestion(_current_question.get());
 
@@ -39,7 +48,7 @@ void Game::Run()
 
       if (next)
       {
-        _current_question = QuestionFactory::Create();
+        _current_question = QuestionFactory::Create(_difficulty);
         _state = GameState::Asking;
       }
     }
