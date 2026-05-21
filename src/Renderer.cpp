@@ -25,9 +25,14 @@ Renderer::~Renderer()
   CloseWindow();
 }
 
-bool Renderer::ShouldWindowClose() 
+bool Renderer::ShouldWindowClose()
 {
   return WindowShouldClose() || _shouldWindowClose;
+}
+
+float Renderer::GetDeltaTime() const
+{
+  return GetFrameTime();
 }
 
 void Renderer::BeginDraw() 
@@ -117,8 +122,7 @@ void Renderer::DrawFeedback(bool correct)
   DrawTextEx(_font, text, { (_width - textWidth) / 2.0f, 85.0f }, 28, 1, color);
 }
 
-void Renderer::DrawDifficultyScreen(Difficulty& selected, bool& chosen)
-{
+void Renderer::DrawDifficultyScreen(Difficulty& selected, bool& chosen){
   chosen = false;
 
   const char* title = "Select Difficulty";
@@ -143,6 +147,70 @@ void Renderer::DrawDifficultyScreen(Difficulty& selected, bool& chosen)
       chosen = true;
     }
   }
+}
+
+void Renderer::DrawTimer(float secondsRemaining, float totalDuration)
+{
+  float ratio = totalDuration > 0.0f ? secondsRemaining / totalDuration : 0.0f;
+  if (ratio < 0.0f) ratio = 0.0f;
+  if (ratio > 1.0f) ratio = 1.0f;
+
+  // two-segment lerp: green → yellow → red as time runs out
+  Color green  = { 0,   200, 80,  255 };
+  Color yellow = { 230, 190, 0,   255 };
+  Color red    = { 220, 50,  50,  255 };
+
+  Color barColor;
+  if (ratio > 0.5f) {
+    float t = (ratio - 0.5f) * 2.0f;
+    barColor = {
+      (unsigned char)(yellow.r + t * (green.r  - yellow.r)),
+      (unsigned char)(yellow.g + t * (green.g  - yellow.g)),
+      (unsigned char)(yellow.b + t * (green.b  - yellow.b)),
+      255
+    };
+  } else {
+    float t = ratio * 2.0f;
+    barColor = {
+      (unsigned char)(red.r + t * (yellow.r - red.r)),
+      (unsigned char)(red.g + t * (yellow.g - red.g)),
+      (unsigned char)(red.b + t * (yellow.b - red.b)),
+      255
+    };
+  }
+
+  const float barX = 10, barY = 8, barHeight = 16;
+  const float gap = 8, rightMargin = 10;
+  // reserve space for the widest possible label so the bar width stays stable
+  float textWidth = MeasureTextEx(_font, "90s", 18, 1).x;
+  float barWidth = _width - barX - gap - textWidth - rightMargin;
+
+  DrawRectangle((int)barX, (int)barY, (int)barWidth, (int)barHeight, LIGHTGRAY);
+  DrawRectangle((int)barX, (int)barY, (int)(barWidth * ratio), (int)barHeight, barColor);
+  DrawRectangleLinesEx({ barX, barY, barWidth, barHeight }, 1, DARKGRAY);
+
+  int seconds = (int)secondsRemaining + 1;
+  if (seconds < 0) seconds = 0;
+  std::string text = std::to_string(seconds) + "s";
+  DrawTextEx(_font, text.c_str(), { barX + barWidth + 8.0f, barY - 1.0f }, 18, 1, DARKGRAY);
+}
+
+void Renderer::DrawGameOver(int score, int total, bool& playAgain)
+{
+  playAgain = false;
+
+  const char* title = "Time's up!";
+  float titleWidth = MeasureTextEx(_font, title, 28, 1).x;
+  DrawTextEx(_font, title, { (_width - titleWidth) / 2.0f, 25.0f }, 28, 1, BLACK);
+
+  std::string scoreText = "Score: " + std::to_string(score) + " / " + std::to_string(total);
+  float scoreWidth = MeasureTextEx(_font, scoreText.c_str(), 22, 1).x;
+  DrawTextEx(_font, scoreText.c_str(), { (_width - scoreWidth) / 2.0f, 75.0f }, 22, 1, DARKGRAY);
+
+  const float btnWidth = 150, btnHeight = 30;
+  bool pressed = false;
+  DrawButton({ (_width - btnWidth) / 2.0f, 125.0f, btnWidth, btnHeight }, "Play Again", pressed);
+  if (pressed) playAgain = true;
 }
 
 } // namespace noonoo

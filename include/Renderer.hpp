@@ -18,14 +18,17 @@ public:
   Renderer(int width, int height);
   ~Renderer();
 
-  bool ShouldWindowClose();  
+  bool ShouldWindowClose();
+  float GetDeltaTime() const;
   void BeginDraw();
   void EndDraw();
   void DrawButton(Rectangle bounds, const char* text, bool& result);
   void DrawQuestion(const Question* q);
   void DrawAnswerButtons(const std::vector<double>& answers, int& clicked);
   void DrawFeedback(bool correct);
+  void DrawTimer(float secondsRemaining, float totalDuration);
   void DrawDifficultyScreen(Difficulty& selected, bool& chosen);
+  void DrawGameOver(int score, int total, bool& playAgain);
  
 #define DrawMessageBox(bounds, title, message, clicked, first, ...) \
   DrawMessageBoxNull(bounds, title, message, clicked, first, __VA_ARGS__, NULL)
