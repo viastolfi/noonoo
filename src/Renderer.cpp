@@ -13,7 +13,7 @@ Renderer::Renderer(int width, int height)
 {
   InitWindow(width, height, "noonoo");
   SetTargetFPS(60);
-  // Load font after window init — raylib requires an active context for texture upload.
+  // load font after window init — raylib requires an active context for texture upload.
   _font = LoadFontEx("assets/fonts/Helvetica-Bold.ttf", 64, nullptr, 0);
   GuiSetFont(_font);
   GuiSetStyle(DEFAULT, TEXT_SIZE, 20);
@@ -115,6 +115,34 @@ void Renderer::DrawFeedback(bool correct)
   Color color = correct ? GREEN : RED;
   float textWidth = MeasureTextEx(_font, text, 28, 1).x;
   DrawTextEx(_font, text, { (_width - textWidth) / 2.0f, 85.0f }, 28, 1, color);
+}
+
+void Renderer::DrawDifficultyScreen(Difficulty& selected, bool& chosen)
+{
+  chosen = false;
+
+  const char* title = "Select Difficulty";
+  float titleWidth = MeasureTextEx(_font, title, 24, 1).x;
+  DrawTextEx(_font, title, { (_width - titleWidth) / 2.0f, 25.0f }, 24, 1, BLACK);
+
+  struct Option { const char* label; Difficulty difficulty; };
+  Option options[] = {
+    { "Easy",   Difficulty::Easy   },
+    { "Medium", Difficulty::Medium },
+    { "Hard",   Difficulty::Hard   }
+  };
+
+  const float btnWidth = 150, btnHeight = 30, startY = 70, gap = 10;
+  const float btnX = (_width - btnWidth) / 2.0f;
+
+  for (int i = 0; i < 3; i++) {
+    bool pressed = false;
+    DrawButton({ btnX, startY + i * (btnHeight + gap), btnWidth, btnHeight }, options[i].label, pressed);
+    if (pressed) {
+      selected = options[i].difficulty;
+      chosen = true;
+    }
+  }
 }
 
 } // namespace noonoo

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "Difficulty.hpp"
 #include "raylib.h"
 #include "thirdparty/raygui.h"
 
@@ -24,6 +25,7 @@ public:
   void DrawQuestion(const Question* q);
   void DrawAnswerButtons(const std::vector<double>& answers, int& clicked);
   void DrawFeedback(bool correct);
+  void DrawDifficultyScreen(Difficulty& selected, bool& chosen);
  
 #define DrawMessageBox(bounds, title, message, clicked, first, ...) \
   DrawMessageBoxNull(bounds, title, message, clicked, first, __VA_ARGS__, NULL)
