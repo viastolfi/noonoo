@@ -17,7 +17,7 @@ void ShowingResultState::Update(Game& game, Renderer& renderer)
   renderer.DrawFeedback(game.WasLastAnswerCorrect());
 
   bool next = false;
-  renderer.DrawButton({ 150, 160, 100, 30 }, "Next", next);
+  renderer.DrawNextButton(next);
   if (next) {
     game.GenerateNextQuestion();
     game.GoToAsking();

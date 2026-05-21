@@ -23,10 +23,13 @@ set(SOURCES
   src/Renderer.cpp
   src/Question.cpp
   src/QuestionFactory.cpp
+  src/JsonHistoryRepository.cpp
   src/states/SelectingDifficultyState.cpp
   src/states/AskingState.cpp
   src/states/ShowingResultState.cpp
   src/states/GameOverState.cpp
+  src/states/HistoryState.cpp
+  src/states/SessionDetailState.cpp
 )
 
 add_executable(noonoo ${SOURCES})

@@ -3,6 +3,7 @@
 
 #include "QuestionSign.hpp"
 
+#include <string>
 #include <vector>
 
 namespace noonoo {
@@ -17,6 +18,7 @@ public:
   QuestionSign GetSign() const;
   double GetResult() const;
   const std::vector<double>& GetPossibleAnswers() const;
+  std::string ToString() const;
 private:
   double _lvalue;
   double _rvalue;
