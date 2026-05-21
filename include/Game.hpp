@@ -8,7 +8,7 @@
 
 namespace noonoo {
 
-enum class GameState { SelectingDifficulty, Asking, ShowingResult };
+enum class GameState { SelectingDifficulty, Asking, ShowingResult, GameOver };
 
 class Game {
 public:
@@ -21,6 +21,10 @@ private:
   GameState _state = GameState::SelectingDifficulty;
   Difficulty _difficulty = Difficulty::Easy;
   bool _was_correct = false;
+  float _timeRemaining = 0.0f;
+  float _timerDuration = 0.0f;
+  int _score = 0;
+  int _total = 0;
 };
 
 }; // namespace noonoo
