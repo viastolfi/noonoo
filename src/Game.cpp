@@ -1,9 +1,12 @@
 #include "Game.hpp"
 #include "QuestionFactory.hpp"
+#include "states/AskingState.hpp"
+#include "states/GameOverState.hpp"
+#include "states/SelectingDifficultyState.hpp"
+#include "states/ShowingResultState.hpp"
 
 namespace noonoo {
 
-// timer duration in seconds per difficulty level
 static float timerDuration(Difficulty d)
 {
   switch (d) {
@@ -16,87 +19,53 @@ static float timerDuration(Difficulty d)
 
 Game::Game(std::unique_ptr<Renderer> r)
   : _renderer(std::move(r))
+  , _state(std::make_unique<SelectingDifficultyState>())
 {
 }
+
+Game::~Game() = default;
 
 void Game::Run()
 {
   while (!_renderer->ShouldWindowClose())
   {
     _renderer->BeginDraw();
-
-    if (_state == GameState::SelectingDifficulty)
-    {
-      bool chosen = false;
-      _renderer->DrawDifficultyScreen(_difficulty, chosen);
-      if (chosen)
-      {
-        _timeRemaining = timerDuration(_difficulty);
-        _timerDuration = _timeRemaining;
-        _score = 0;
-        _total = 0;
-        _current_question = QuestionFactory::Create(_difficulty);
-        _state = GameState::Asking;
-      }
-    }
-    else if (_state == GameState::Asking)
-    {
-      _timeRemaining -= _renderer->GetDeltaTime();
-      if (_timeRemaining <= 0.0f)
-      {
-        _state = GameState::GameOver;
-      }
-      else
-      {
-        _renderer->DrawTimer(_timeRemaining, _timerDuration);
-        _renderer->DrawQuestion(_current_question.get());
-
-        int clicked = -1;
-        _renderer->DrawAnswerButtons(_current_question->GetPossibleAnswers(), clicked);
-
-        if (clicked >= 0)
-        {
-          double selected = _current_question->GetPossibleAnswers()[clicked];
-          _was_correct = ((int)selected == (int)_current_question->GetResult());
-          if (_was_correct) _score++;
-          _total++;
-          _state = GameState::ShowingResult;
-        }
-      }
-    }
-    else if (_state == GameState::ShowingResult)
-    {
-      _timeRemaining -= _renderer->GetDeltaTime();
-      if (_timeRemaining <= 0.0f)
-      {
-        _state = GameState::GameOver;
-      }
-      else
-      {
-        _renderer->DrawTimer(_timeRemaining, _timerDuration);
-        _renderer->DrawQuestion(_current_question.get());
-        _renderer->DrawFeedback(_was_correct);
-
-        bool next = false;
-        _renderer->DrawButton({150, 160, 100, 30}, "Next", next);
-
-        if (next)
-        {
-          _current_question = QuestionFactory::Create(_difficulty);
-          _state = GameState::Asking;
-        }
-      }
-    }
-    else
-    {
-      bool playAgain = false;
-      _renderer->DrawGameOver(_score, _total, playAgain);
-      if (playAgain)
-        _state = GameState::SelectingDifficulty;
-    }
-
+    _state->Update(*this, *_renderer);
     _renderer->EndDraw();
   }
+}
+
+void Game::GoToSelectingDifficulty() { _state = std::make_unique<SelectingDifficultyState>(); }
+void Game::GoToAsking()              { _state = std::make_unique<AskingState>(); }
+void Game::GoToShowingResult()       { _state = std::make_unique<ShowingResultState>(); }
+void Game::GoToGameOver()            { _state = std::make_unique<GameOverState>(); }
+
+void Game::StartGame(Difficulty d)
+{
+  _difficulty     = d;
+  _timeRemaining  = timerDuration(d);
+  _timerDuration  = _timeRemaining;
+  _score          = 0;
+  _total          = 0;
+  _current_question = QuestionFactory::Create(_difficulty);
+  GoToAsking();
+}
+
+void Game::SubmitAnswer(double selected)
+{
+  _was_correct = ((int)selected == (int)_current_question->GetResult());
+  if (_was_correct) _score++;
+  _total++;
+}
+
+void Game::GenerateNextQuestion()
+{
+  _current_question = QuestionFactory::Create(_difficulty);
+}
+
+void Game::DecrementTime(float dt)
+{
+  _timeRemaining -= dt;
 }
 
 }; // namespace noonoo
