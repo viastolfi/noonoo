@@ -1,5 +1,6 @@
 #define RAYGUI_IMPLEMENTATION
 #include "Renderer.hpp"
+#include "Mascot.hpp"
 #include "Question.hpp"
 #include "QuestionSign.hpp"
 
@@ -28,11 +29,13 @@ Renderer::Renderer(int width, int height)
   _font = LoadFontEx("assets/fonts/Helvetica-Bold.ttf", 128, nullptr, 0);
   GuiSetFont(_font);
   GuiSetStyle(DEFAULT, TEXT_SIZE, 28);
+  _mascotTexture = LoadTexture("assets/sprites/NinjaGreen/Walk.png");
 }
 
 Renderer::~Renderer()
 {
   UnloadFont(_font);
+  UnloadTexture(_mascotTexture);
   CloseWindow();
 }
 
@@ -338,6 +341,41 @@ void Renderer::DrawSessionDetailScreen(const GameSession& session, float scrollO
   bool pressed = false;
   DrawButton({ (_width - btnWidth) / 2.0f, (float)_height - 58.0f, btnWidth, btnHeight }, "Back", pressed);
   if (pressed) back = true;
+}
+
+void Renderer::DrawMascot(const Mascot& mascot)
+{
+    if (!mascot.IsVisible()) return;
+
+    static constexpr float FRAME_SIZE = 16.0f;
+
+    // columns = directions, rows = animation frames
+    // col 0 = down, col 1 = up, col 2 = left, col 3 = right
+    float srcX;
+    switch (mascot.GetDirection()) {
+        case MascotDirection::Down:  srcX =  0.0f; break;
+        case MascotDirection::Up:    srcX = 16.0f; break;
+        case MascotDirection::Left:  srcX = 32.0f; break;
+        case MascotDirection::Right: srcX = 48.0f; break;
+        default:                     srcX =  0.0f; break;
+    }
+
+    float srcY = mascot.GetFrameIndex() * FRAME_SIZE;
+
+    Rectangle src  = { srcX, srcY, FRAME_SIZE, FRAME_SIZE };
+    Rectangle dest = { mascot.GetX(), mascot.GetY(), Mascot::DISPLAY_SIZE, Mascot::DISPLAY_SIZE };
+    DrawTexturePro(_mascotTexture, src, dest, { 0, 0 }, 0.0f, WHITE);
+}
+
+void Renderer::DrawMascotToggle(bool isVisible, bool& clicked)
+{
+    clicked = false;
+    const float btnW = 200.0f, btnH = 34.0f;
+    DrawButton(
+        { (float)_width - btnW - 10.0f, (float)_height - btnH - 10.0f, btnW, btnH },
+        isVisible ? "Mascot ON" : "Mascot OFF",
+        clicked
+    );
 }
 
 } // namespace noonoo
