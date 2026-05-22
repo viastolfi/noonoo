@@ -25,6 +25,7 @@ set(SOURCES
   src/QuestionFactory.cpp
   src/JsonHistoryRepository.cpp
   src/Mascot.cpp
+  src/PlayerLevel.cpp
   src/states/SelectingDifficultyState.cpp
   src/states/AskingState.cpp
   src/states/ShowingResultState.cpp

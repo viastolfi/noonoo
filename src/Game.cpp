@@ -26,6 +26,8 @@ Game::Game(std::unique_ptr<Renderer> r)
   , _historyRepo(std::make_unique<JsonHistoryRepository>("history.json"))
 {
   _historyRepo->Load();
+  _currentLevel = PlayerLevel::Compute(_historyRepo->GetTotalCorrect());
+  _renderer->SetMascotLevel(_currentLevel);
 }
 
 Game::~Game() = default;
@@ -39,6 +41,7 @@ void Game::Run()
 
     _renderer->BeginDraw();
     _renderer->DrawMascot(_mascot);
+    _renderer->DrawBadge(GetTotalCorrect());
     _state->Update(*this, *_renderer);
 
     bool toggleClicked = false;
@@ -54,7 +57,14 @@ void Game::GoToAsking()              { _state = std::make_unique<AskingState>();
 void Game::GoToShowingResult()       { _state = std::make_unique<ShowingResultState>(); }
 void Game::GoToGameOver()
 {
+  _sessionActive = false;
   _historyRepo->EndSession(_score, _total);
+  int newLevel = PlayerLevel::Compute(_historyRepo->GetTotalCorrect());
+  _justLeveledUp = (newLevel != _currentLevel);
+  if (_justLeveledUp) {
+    _currentLevel = newLevel;
+    _renderer->SetMascotLevel(_currentLevel);
+  }
   _state = std::make_unique<GameOverState>();
 }
 void Game::GoToHistory()             { _state = std::make_unique<HistoryState>(); }
@@ -71,6 +81,8 @@ void Game::StartGame(Difficulty d)
   _timerDuration  = _timeRemaining;
   _score          = 0;
   _total          = 0;
+  _sessionActive  = true;
+  _justLeveledUp  = false;
   _historyRepo->BeginSession(d);
   _current_question = QuestionFactory::Create(_difficulty);
   GoToAsking();
@@ -100,6 +112,13 @@ void Game::GenerateNextQuestion()
 void Game::DecrementTime(float dt)
 {
   _timeRemaining -= dt;
+}
+
+int Game::GetTotalCorrect() const
+{
+  // include current game's score only when a session is active to avoid
+  // double-counting after EndSession has already committed it to the repository
+  return _historyRepo->GetTotalCorrect() + (_sessionActive ? _score : 0);
 }
 
 }; // namespace noonoo

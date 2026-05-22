@@ -7,7 +7,8 @@ namespace noonoo {
 void GameOverState::Update(Game& game, Renderer& renderer)
 {
   bool playAgain = false;
-  renderer.DrawGameOver(game.GetScore(), game.GetTotal(), playAgain);
+  renderer.DrawGameOver(game.GetScore(), game.GetTotal(), playAgain,
+      game.JustLeveledUp(), game.GetCurrentLevel());
   if (playAgain)
     game.GoToSelectingDifficulty();
 }

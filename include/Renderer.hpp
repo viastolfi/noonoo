@@ -8,6 +8,7 @@
 #include "Difficulty.hpp"
 #include "GameSession.hpp"
 #include "Mascot.hpp"
+#include "PlayerLevel.hpp"
 #include "QuestionRecord.hpp"
 #include "raylib.h"
 #include "thirdparty/raygui.h"
@@ -36,9 +37,11 @@ public:
   void DrawNextButton(bool& next);
   void DrawTimer(float secondsRemaining, float totalDuration);
   void DrawDifficultyScreen(Difficulty& selected, bool& chosen, bool& showHistory);
-  void DrawGameOver(int score, int total, bool& playAgain);
+  void DrawGameOver(int score, int total, bool& playAgain, bool leveledUp, int level);
   void DrawMascot(const Mascot& mascot);
   void DrawMascotToggle(bool isVisible, bool& clicked);
+  void DrawBadge(int totalCorrect);
+  void SetMascotLevel(int level);
   void DrawSessionListScreen(const std::vector<GameSession>& sessions, int& clickedIndex, bool& back);
   void DrawSessionDetailScreen(const GameSession& session, float scrollOffset, bool& back);
 
@@ -55,8 +58,9 @@ private:
   int  _width;
   int  _height;
   bool _shouldWindowClose = false;
-  Font    _font;
-  Texture2D _mascotTexture;
+  Font      _font;
+  Texture2D _mascotTexture = {};
+  int       _mascotLevel   = 0;
 };
 
 } // namespace noonoo

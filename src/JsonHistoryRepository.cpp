@@ -1,6 +1,7 @@
 #include "JsonHistoryRepository.hpp"
 
 #include <fstream>
+#include <iostream>
 
 namespace noonoo {
 
@@ -120,6 +121,14 @@ const std::vector<GameSession>& JsonHistoryRepository::GetAllSessions() const
     return _sessions;
 }
 
+int JsonHistoryRepository::GetTotalCorrect() const
+{
+    int total = 0;
+    for (const auto& s : _sessions)
+        total += s.score;
+    return total;
+}
+
 void JsonHistoryRepository::Load()
 {
     std::ifstream in(_filePath);
@@ -141,7 +150,10 @@ void JsonHistoryRepository::Load()
 void JsonHistoryRepository::Save() const
 {
     std::ofstream out(_filePath);
-    if (!out.is_open()) return;
+    if (!out.is_open()) {
+        std::cerr << "noonoo: failed to open history file for writing: " << _filePath << "\n";
+        return;
+    }
 
     for (const auto& s : _sessions) {
         out << "{\"sd\":" << static_cast<int>(s.difficulty)

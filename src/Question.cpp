@@ -3,12 +3,13 @@
 #include <algorithm>
 #include <random>
 #include <set>
+#include <stdexcept>
 #include <string>
 
 namespace noonoo {
 
 Question::Question(double lvalue, double rvalue, QuestionSign sign)
-  :_lvalue(lvalue), _rvalue(rvalue), _sign(sign)
+  : _lvalue(lvalue), _rvalue(rvalue), _sign(sign)
 {
   switch (sign) {
     case QuestionSign::SIGN_PLUS:
@@ -24,7 +25,7 @@ Question::Question(double lvalue, double rvalue, QuestionSign sign)
       _result = lvalue / rvalue;
       break;
     default:
-      // TODO: add exception handling
+      throw std::invalid_argument("unknown QuestionSign value");
     break;
   }
 
