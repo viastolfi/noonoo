@@ -18,6 +18,7 @@ public:
     virtual void EndSession(int score, int total)       = 0;
 
     virtual const std::vector<GameSession>& GetAllSessions() const = 0;
+    virtual int  GetTotalCorrect() const = 0;
     virtual void Load()  = 0;
     virtual void Save() const = 0;
 };

@@ -29,7 +29,6 @@ Renderer::Renderer(int width, int height)
   _font = LoadFontEx("assets/fonts/Helvetica-Bold.ttf", 128, nullptr, 0);
   GuiSetFont(_font);
   GuiSetStyle(DEFAULT, TEXT_SIZE, 28);
-  _mascotTexture = LoadTexture("assets/sprites/NinjaGreen/Walk.png");
 }
 
 Renderer::~Renderer()
@@ -176,7 +175,8 @@ void Renderer::DrawTimer(float secondsRemaining, float totalDuration)
     };
   }
 
-  const float barX = 15, barY = 12, barHeight = 20;
+  // badge occupies top-left corner (cx=44, r=22), so start after it
+  const float barX = 80, barY = 12, barHeight = 20;
   const float gap = 10, rightMargin = 15;
   // reserve space for the widest possible label so the bar width stays stable
   float textWidth = MeasureTextEx(_font, "90s", 20, 1).x;
@@ -228,21 +228,28 @@ void Renderer::DrawDifficultyScreen(Difficulty& selected, bool& chosen, bool& sh
   if (histPressed) showHistory = true;
 }
 
-void Renderer::DrawGameOver(int score, int total, bool& playAgain)
+void Renderer::DrawGameOver(int score, int total, bool& playAgain, bool leveledUp, int level)
 {
   playAgain = false;
 
   const char* title = "Time's up!";
   float titleWidth = MeasureTextEx(_font, title, 40, 1).x;
-  DrawTextEx(_font, title, { (_width - titleWidth) / 2.0f, _height * 0.28f }, 40, 1, BLACK);
+  DrawTextEx(_font, title, { (_width - titleWidth) / 2.0f, _height * 0.22f }, 40, 1, BLACK);
 
   std::string scoreText = "Score: " + std::to_string(score) + " / " + std::to_string(total);
   float scoreWidth = MeasureTextEx(_font, scoreText.c_str(), 28, 1).x;
-  DrawTextEx(_font, scoreText.c_str(), { (_width - scoreWidth) / 2.0f, _height * 0.42f }, 28, 1, DARKGRAY);
+  DrawTextEx(_font, scoreText.c_str(), { (_width - scoreWidth) / 2.0f, _height * 0.36f }, 28, 1, DARKGRAY);
+
+  if (leveledUp) {
+    const char* lvlText = TextFormat("Level Up!  Lv.%d", level);
+    float lvlW = MeasureTextEx(_font, lvlText, 32, 1).x;
+    Color gold = { 255, 180, 0, 255 };
+    DrawTextEx(_font, lvlText, { (_width - lvlW) / 2.0f, _height * 0.50f }, 32, 1, gold);
+  }
 
   const float btnWidth = 200.0f, btnHeight = 50.0f;
   bool pressed = false;
-  DrawButton({ (_width - btnWidth) / 2.0f, _height * 0.56f, btnWidth, btnHeight }, "Play Again", pressed);
+  DrawButton({ (_width - btnWidth) / 2.0f, _height * 0.66f, btnWidth, btnHeight }, "Play Again", pressed);
   if (pressed) playAgain = true;
 }
 
@@ -376,6 +383,86 @@ void Renderer::DrawMascotToggle(bool isVisible, bool& clicked)
         isVisible ? "Mascot ON" : "Mascot OFF",
         clicked
     );
+}
+
+void Renderer::SetMascotLevel(int level)
+{
+    if (level == _mascotLevel) return;
+    _mascotLevel = level;
+
+    if (_mascotTexture.id != 0)
+        UnloadTexture(_mascotTexture);
+
+    auto config = PlayerLevel::ConfigFor(level);
+    std::string path = std::string("assets/sprites/") + config.ninjaFolder + "/Walk.png";
+    _mascotTexture = LoadTexture(path.c_str());
+}
+
+void Renderer::DrawBadge(int totalCorrect)
+{
+    // color matches the ninja sprite for each level
+    static constexpr Color LEVEL_COLORS[] = {
+        {   0, 180,  48, 255 },  // level 1 — green
+        {   0, 121, 241, 255 },  // level 2 — blue
+        { 230,  41,  55, 255 },  // level 3 — red
+        { 255, 200,   0, 255 },  // level 4 — gold
+    };
+
+    auto   config = PlayerLevel::ConfigFor(_mascotLevel);
+    Color  color  = LEVEL_COLORS[_mascotLevel - 1];
+
+    const float cx = 44.0f;
+    const float cy = 44.0f;
+    const float r  = 22.0f;
+
+    switch (config.badge) {
+        case BadgeShape::Circle:
+            DrawCircle((int)cx, (int)cy, (int)r, color);
+            DrawCircleLines((int)cx, (int)cy, (int)r, WHITE);
+            break;
+        case BadgeShape::Triangle:
+            DrawTriangle({ cx, cy - r }, { cx - r, cy + r }, { cx + r, cy + r }, color);
+            DrawTriangleLines({ cx, cy - r }, { cx - r, cy + r }, { cx + r, cy + r }, WHITE);
+            break;
+        case BadgeShape::Diamond:
+            DrawPoly({ cx, cy }, 4, r, 45.0f, color);
+            DrawPolyLinesEx({ cx, cy }, 4, r, 45.0f, 2.0f, WHITE);
+            break;
+        case BadgeShape::Pentagon:
+            DrawPoly({ cx, cy }, 5, r, -90.0f, color);
+            DrawPolyLinesEx({ cx, cy }, 5, r, -90.0f, 2.0f, WHITE);
+            break;
+    }
+
+    DrawTextEx(_font, TextFormat("Lv.%d", _mascotLevel),
+        { cx - 18.0f, cy + r + 4.0f }, 18.0f, 1.0f, WHITE);
+
+    // progress bar toward next level
+    const float barX = 8.0f, barY = cy + r + 26.0f;
+    const float barW = 72.0f, barH = 6.0f;
+
+    if (_mascotLevel < PlayerLevel::MAX_LEVEL) {
+        LevelConfig current = PlayerLevel::ConfigFor(_mascotLevel);
+        LevelConfig next    = PlayerLevel::ConfigFor(_mascotLevel + 1);
+        int   range    = next.threshold - current.threshold;
+        int   progress = totalCorrect - current.threshold;
+        float ratio    = (range > 0) ? (float)progress / (float)range : 1.0f;
+        if (ratio < 0.0f) ratio = 0.0f;
+        if (ratio > 1.0f) ratio = 1.0f;
+
+        DrawRectangle((int)barX, (int)barY, (int)barW, (int)barH, { 80, 80, 80, 180 });
+        DrawRectangle((int)barX, (int)barY, (int)(barW * ratio), (int)barH, color);
+        DrawRectangleLinesEx({ barX, barY, barW, barH }, 1.0f, { 200, 200, 200, 180 });
+
+        DrawTextEx(_font, TextFormat("%d/%d", totalCorrect - current.threshold, range),
+            { barX, barY + barH + 2.0f }, 14.0f, 1.0f, { 200, 200, 200, 200 });
+    } else {
+        // max level — show a full gold bar
+        Color gold = { 255, 200, 0, 255 };
+        DrawRectangle((int)barX, (int)barY, (int)barW, (int)barH, gold);
+        DrawRectangleLinesEx({ barX, barY, barW, barH }, 1.0f, WHITE);
+        DrawTextEx(_font, "MAX", { barX + 22.0f, barY + barH + 2.0f }, 14.0f, 1.0f, gold);
+    }
 }
 
 } // namespace noonoo

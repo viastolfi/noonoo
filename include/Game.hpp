@@ -5,6 +5,7 @@
 #include "IGameState.hpp"
 #include "IHistoryRepository.hpp"
 #include "Mascot.hpp"
+#include "PlayerLevel.hpp"
 #include "Question.hpp"
 #include "Renderer.hpp"
 #include <memory>
@@ -35,8 +36,11 @@ public:
   bool                       WasLastAnswerCorrect()  const { return _was_correct; }
   int                        GetScore()              const { return _score; }
   int                        GetTotal()              const { return _total; }
+  int                        GetTotalCorrect()       const;
   int                        GetSelectedSessionIndex() const { return _selectedSessionIndex; }
-  const IHistoryRepository&  GetHistory()            const { return *_historyRepo; }
+  int                        GetCurrentLevel()         const { return _currentLevel; }
+  bool                       JustLeveledUp()           const { return _justLeveledUp; }
+  const IHistoryRepository&  GetHistory()              const { return *_historyRepo; }
 
 private:
   std::unique_ptr<Renderer>           _renderer;
@@ -51,6 +55,9 @@ private:
   int        _score               = 0;
   int        _total               = 0;
   int        _selectedSessionIndex = 0;
+  int        _currentLevel        = 1;
+  bool       _sessionActive       = false;
+  bool       _justLeveledUp       = false;
 };
 
 }; // namespace noonoo

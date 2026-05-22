@@ -16,6 +16,7 @@ public:
     void EndSession(int score, int total)        override;
 
     const std::vector<GameSession>& GetAllSessions() const override;
+    int  GetTotalCorrect() const override;
     void Load()  override;
     void Save() const override;
 
