@@ -34,8 +34,17 @@ void Game::Run()
 {
   while (!_renderer->ShouldWindowClose())
   {
+    float dt = _renderer->GetDeltaTime();
+    _mascot.Update(dt, (float)_renderer->GetWidth(), (float)_renderer->GetHeight());
+
     _renderer->BeginDraw();
+    _renderer->DrawMascot(_mascot);
     _state->Update(*this, *_renderer);
+
+    bool toggleClicked = false;
+    _renderer->DrawMascotToggle(_mascot.IsVisible(), toggleClicked);
+    if (toggleClicked) _mascot.ToggleVisible();
+
     _renderer->EndDraw();
   }
 }

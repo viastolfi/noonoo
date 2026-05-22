@@ -4,6 +4,7 @@
 #include "Difficulty.hpp"
 #include "IGameState.hpp"
 #include "IHistoryRepository.hpp"
+#include "Mascot.hpp"
 #include "Question.hpp"
 #include "Renderer.hpp"
 #include <memory>
@@ -42,6 +43,7 @@ private:
   std::unique_ptr<Question>           _current_question;
   std::unique_ptr<IGameState>         _state;
   std::unique_ptr<IHistoryRepository> _historyRepo;
+  Mascot     _mascot;
   Difficulty _difficulty          = Difficulty::Easy;
   bool       _was_correct         = false;
   float      _timeRemaining       = 0.0f;
